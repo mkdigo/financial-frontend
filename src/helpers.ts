@@ -38,23 +38,34 @@ export function today() {
   return year + '-' + month + '-' + day;
 }
 
+export function maskPhone(value: string | number): string {
+  value = value.toString();
+
+  value = value.replace(/\D/g, '');
+
+  let string = '';
+
+  for (let i = 0; i < value.length; i++) {
+    if (i === 4 || i === 7) string += '-';
+    string += value[i];
+  }
+
+  return string;
+}
+
 export function maskCellPhone(value: string | number): string {
   value = value.toString();
 
   value = value.replace(/\D/g, '');
 
-  if (value.length > 7) {
-    value =
-      value.substring(0, 3) +
-      '-' +
-      value.substring(3, 7) +
-      '-' +
-      value.substring(7, value.length);
-  } else if (value.length > 3) {
-    value = value.substring(0, 3) + '-' + value.substring(3, value.length);
+  let string = '';
+
+  for (let i = 0; i < value.length; i++) {
+    if (i === 3 || i === 7) string += '-';
+    string += value[i];
   }
 
-  return value;
+  return string;
 }
 
 export function maskZipcode(value: string | number): string {

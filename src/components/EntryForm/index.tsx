@@ -30,71 +30,77 @@ const EntryForm: React.FC<IProps> = ({
     <form action='' onSubmit={handleSubmit}>
       <ul>
         <li>
-          <label htmlFor='add-entry-inclusion'>Data:</label>
-          <input
-            type='inclusion'
-            id='add-entry-inclusion'
-            onChange={handleInputChange}
-            value={entryFormData.inclusion}
-            name='inclusion'
-            ref={inputDateRef}
-            required
-          />
+          <label>
+            <strong>Data:</strong>
+            <input
+              type='text'
+              onChange={handleInputChange}
+              value={entryFormData.inclusion}
+              name='inclusion'
+              ref={inputDateRef}
+              required
+            />
+          </label>
         </li>
         <li>
-          <label htmlFor='add-entry-debit_id'>Débito:</label>
-          <select
-            value={entryFormData.debit_id}
-            onChange={handleInputChange}
-            id='add-entry-debit_id'
-            name='debit_id'
-            required
-          >
-            <option value=''></option>
-            {accounts.map((account) => (
-              <option value={account.id} key={account.id}>
-                {account.name}
-              </option>
-            ))}
-          </select>
+          <label>
+            <strong>Débito:</strong>
+            <select
+              value={entryFormData.debit_id}
+              onChange={handleInputChange}
+              name='debit_id'
+              required
+            >
+              <option value=''></option>
+              {accounts.map((account) => (
+                <option value={account.id} key={account.id}>
+                  {account.name}
+                </option>
+              ))}
+            </select>
+          </label>
         </li>
         <li>
-          <label htmlFor='add-entry-credit'>Crédito:</label>
-          <select
-            value={entryFormData.credit_id}
-            onChange={handleInputChange}
-            id='add-entry-credit_id'
-            name='credit_id'
-            required
-          >
-            <option value=''></option>
-            {accounts.map((account) => (
-              <option value={account.id} key={account.id}>
-                {account.name}
-              </option>
-            ))}
-          </select>
+          <label>
+            <strong>Crédito:</strong>
+            <select
+              value={entryFormData.credit_id}
+              onChange={handleInputChange}
+              id='add-entry-credit_id'
+              name='credit_id'
+              required
+            >
+              <option value=''></option>
+              {accounts.map((account) => (
+                <option value={account.id} key={account.id}>
+                  {account.name}
+                </option>
+              ))}
+            </select>
+          </label>
         </li>
         <li>
-          <label htmlFor='add-entry-value'>Valor:</label>
-          <input
-            type='text'
-            id='add-entry-value'
-            name='value'
-            onChange={handleInputChange}
-            value={numberFormat(entryFormData.value)}
-            data-mask-number
-            required
-          />
+          <label>
+            <strong>Valor:</strong>
+            <input
+              type='text'
+              name='value'
+              onChange={handleInputChange}
+              value={numberFormat(entryFormData.value)}
+              data-mask-number
+              required
+            />
+          </label>
         </li>
         <li>
-          <label htmlFor='add-entry-note'>Notas:</label>
-          <textarea
-            id='add-entry-note'
-            name='note'
-            value={entryFormData.note ?? ''}
-            onChange={handleInputChange}
-          />
+          <label htmlFor='add-entry-note'>
+            <strong>Notas:</strong>
+            <textarea
+              name='note'
+              value={entryFormData.note ?? ''}
+              onChange={handleInputChange}
+            />
+          </label>
         </li>
         <li>
           <button

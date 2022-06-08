@@ -12,6 +12,9 @@
 
   --sidebar-width: 300px;
   --sidebar-header-height: 80px;
+
+  --border: solid 1px var(--color-gray);
+  --border-radius: 5px;
 }
 
 * {
@@ -36,7 +39,7 @@ input,
 select,
 textarea {
   font-size: 1rem;
-  border: solid 1px var(--color-gray);
+  border: var(--border);
   border-radius: 5px;
   padding: 0.5rem;
   height: 38px;
@@ -50,7 +53,7 @@ textarea {
 
 button {
   font-size: 1rem;
-  border: solid 1px var(--color-gray);
+  border: var(--border);
   border-radius: 5px;
   padding: 0.5rem;
   background: var(--color-gray);
@@ -102,7 +105,7 @@ ul {
 ul.card {
   position: relative;
   flex-direction: column;
-  border: solid 1px var(--color-gray);
+  border: var(--border);
   border-radius: 5px;
   margin-bottom: 0.5rem;
   padding: 0.5rem 1rem;
@@ -159,7 +162,7 @@ ul.card {
   align-items: center;
   color: var(--color-green);
   margin-bottom: 1rem;
-  border-bottom: solid 1px var(--color-gray);
+  border-bottom: var(--border);
 
   div.tools {
     display: flex;
@@ -196,7 +199,7 @@ ul.card {
 .filters {
   padding-bottom: 1rem;
   margin-bottom: 1rem;
-  border-bottom: solid 1px var(--color-gray);
+  border-bottom: var(--border);
 
   form {
     display: flex;
@@ -217,5 +220,50 @@ ul.card {
 
   @media print {
     display: none;
+  }
+}
+
+.form {
+  max-width: 900px;
+  padding: 1rem;
+  border: var(--border);
+  border-radius: var(--border-radius);
+
+  ul {
+    flex-direction: column;
+
+    li {
+      display: flex;
+
+      &:not(:first-child) {
+        margin-top: 0.5rem;
+      }
+
+      &:last-child {
+        justify-content: flex-end;
+
+        button + button {
+          margin-left: 1rem;
+        }
+      }
+
+      label {
+        display: flex;
+        align-items: center;
+        width: 100%;
+
+        strong {
+          width: 150px;
+        }
+
+        input, textarea {
+          flex-grow: 1;
+        }
+
+        textarea {
+          height: 80px;
+        }
+      }
+    }
   }
 }

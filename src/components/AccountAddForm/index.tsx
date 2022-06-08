@@ -45,7 +45,7 @@ const AccountAddForm: React.FC<IProps> = ({
   ): void => {
     setData((prev) => ({
       ...prev,
-      [event.target.id]: event.target.value,
+      [event.target.name]: event.target.value,
     }));
   };
 
@@ -103,46 +103,52 @@ const AccountAddForm: React.FC<IProps> = ({
       <form action='' onSubmit={handleSubmit}>
         <ul>
           <li>
-            <label htmlFor='name'>Nome:</label>
-            <input
-              type='text'
-              id='name'
-              value={data.name}
-              onChange={handleInputChange}
-              required
-            />
+            <label>
+              <strong>Nome:</strong>
+              <input
+                type='text'
+                name='name'
+                value={data.name}
+                onChange={handleInputChange}
+                required
+              />
+            </label>
           </li>
           <li>
-            <label htmlFor='group'>Grupo:</label>
-            <select
-              value={data.group_id}
-              onChange={handleAvailableSubgroups}
-              id='group'
-              required
-            >
-              <option value=''></option>
-              {groups.map((group) => (
-                <option value={group.id} key={group.id}>
-                  {groupTranslation[language].getName(group.name)}
-                </option>
-              ))}
-            </select>
+            <label>
+              <strong>Grupo:</strong>
+              <select
+                value={data.group_id}
+                onChange={handleAvailableSubgroups}
+                name='group'
+                required
+              >
+                <option value=''></option>
+                {groups.map((group) => (
+                  <option value={group.id} key={group.id}>
+                    {groupTranslation[language].getName(group.name)}
+                  </option>
+                ))}
+              </select>
+            </label>
           </li>
           <li>
-            <label htmlFor='subgroup'>Subgrupo:</label>
-            <select
-              value={data.subgroup_id}
-              onChange={handleAvailableGroups}
-              id='subgroup'
-              required
-            >
-              <option value=''></option>
-              {availableSubgroups.map((subgroup) => (
-                <option value={subgroup.id} key={subgroup.id}>
-                  {subgroupTranslation[language].getName(subgroup.name)}
-                </option>
-              ))}
-            </select>
+            <label>
+              <strong>Subgrupo:</strong>
+              <select
+                value={data.subgroup_id}
+                onChange={handleAvailableGroups}
+                name='subgroup'
+                required
+              >
+                <option value=''></option>
+                {availableSubgroups.map((subgroup) => (
+                  <option value={subgroup.id} key={subgroup.id}>
+                    {subgroupTranslation[language].getName(subgroup.name)}
+                  </option>
+                ))}
+              </select>
+            </label>
           </li>
           <li>
             <button
