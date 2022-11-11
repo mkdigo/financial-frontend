@@ -159,7 +159,7 @@ const AccountAddForm: React.FC<IProps> = ({
               Cancelar
             </button>
             <button type='submit' className='btn-primary'>
-              Editar
+              Adicionar
             </button>
           </li>
         </ul>

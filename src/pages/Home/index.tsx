@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import useAppContext from '../../hooks/useAppContext';
 import useAuthContext from '../../hooks/useAuthContext';
 import AuthApi, { ILogin } from '../../api/AuthApi';
+import { setToken } from '../../helpers';
 
 import LogoSvg from '../../svg/LogoSvg';
 
@@ -15,7 +16,7 @@ interface ILocationState {
   };
 }
 
-const Home: React.FC = () => {
+export function Home() {
   const navigate = useNavigate();
   const location = useLocation();
   const { setLoading } = useAppContext();
@@ -31,24 +32,32 @@ const Home: React.FC = () => {
     setData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     e.preventDefault();
     setLoading(true);
     setError(false);
 
-    AuthApi.login(data).then((response) => {
-      if (response.success && response.data) {
-        let path = 'balance_sheet';
-        if (location.state) {
-          const { from } = location.state as ILocationState;
-          path = from.pathname;
-        }
+    const api = new AuthApi();
 
-        setAuthUser(response.data);
-        navigate(path);
-      } else setError(true);
-      setLoading(false);
-    });
+    const response = await api.login(data);
+    setLoading(false);
+
+    if (!response.success) {
+      setError(true);
+      return;
+    }
+
+    let path = 'balance_sheet';
+    if (location.state) {
+      const { from } = location.state as ILocationState;
+      path = from.pathname;
+    }
+
+    setToken(response.data.token);
+    setAuthUser(response.data.user);
+    navigate(path);
   };
 
   return (
@@ -112,6 +121,4 @@ const Home: React.FC = () => {
       </section>
     </main>
   );
-};
-
-export { Home };
+}

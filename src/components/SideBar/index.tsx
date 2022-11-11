@@ -1,59 +1,21 @@
 import React, { useState } from 'react';
-import { Link, useMatch, useResolvedPath } from 'react-router-dom';
+import {
+  Link,
+  useMatch,
+  useResolvedPath,
+  LinkProps,
+  useNavigate,
+} from 'react-router-dom';
 
-import type { LinkProps } from 'react-router-dom';
+import { authRoutes } from '../../Routes';
+import AuthApi from '../../api/AuthApi';
+import useAppContext from '../../hooks/useAppContext';
+import { removeToken } from '../../helpers';
 
 import LogoSvg from '../../svg/LogoSvg';
 import MenuSvg from '../../svg/MenuSvg';
 
 import styles from './styles.module.scss';
-
-const links: TLink[] = [
-  {
-    to: '/balance_sheet',
-    text: 'Balanço Patrimonial',
-  },
-  {
-    to: '/accounts',
-    text: 'Contas',
-  },
-  {
-    to: '/entries',
-    text: 'Lançamentos',
-  },
-  {
-    to: '/revenues',
-    text: 'Receitas',
-  },
-  {
-    to: '/expenses',
-    text: 'Despesas',
-  },
-  {
-    to: '/payables',
-    text: 'Contas a Pagar',
-  },
-  {
-    to: '/receivables',
-    text: 'Contas a Receber',
-  },
-  {
-    to: '/providers',
-    text: 'Fornecedores',
-  },
-  {
-    to: '/products',
-    text: 'Produtos',
-  },
-  {
-    to: '/reports',
-    text: 'Relatórios',
-  },
-  {
-    to: '/logout',
-    text: 'Sair',
-  },
-];
 
 const CustomLink: React.FC<LinkProps> = ({ children, to, ...props }) => {
   let resolved = useResolvedPath(to);
@@ -66,16 +28,28 @@ const CustomLink: React.FC<LinkProps> = ({ children, to, ...props }) => {
   );
 };
 
-type TLink = {
-  to: string;
-  text: string;
-};
-
 const SideBar: React.FC = () => {
+  const { handleError, setLoading } = useAppContext();
+  const navigate = useNavigate();
   const [menuActived, setMenuActived] = useState<boolean>(false);
 
   const handleMenuActive = (): void => {
     setMenuActived(!menuActived);
+  };
+
+  const logout = async (): Promise<void> => {
+    setLoading(true);
+    const api = new AuthApi();
+    const response = await api.logout();
+    setLoading(false);
+
+    if (!response.success) {
+      handleError('Algo de errado aconteceu, tente novamente.');
+      return;
+    }
+
+    removeToken();
+    navigate('/');
   };
 
   return (
@@ -93,11 +67,17 @@ const SideBar: React.FC = () => {
         className={menuActived ? styles.menuActived : ''}
         onClick={() => setMenuActived(false)}
       >
-        {links.map((link) => (
-          <li key={link.to}>
-            <CustomLink to={link.to}>{link.text}</CustomLink>
-          </li>
-        ))}
+        {authRoutes.map((route) => {
+          if (route.text)
+            return (
+              <li key={route.path}>
+                <CustomLink to={route.path}>{route.text}</CustomLink>
+              </li>
+            );
+        })}
+        <li>
+          <button onClick={logout}>Sair</button>
+        </li>
       </ul>
     </nav>
   );

@@ -1,8 +1,10 @@
 import React, { useContext, useRef, useState, useEffect } from 'react';
+
 import { IAccount } from '../../api/AccountApi';
 import EntryApi, { IEntry, IEntryRequest } from '../../api/EntryApi';
 import { AppContext } from '../../contexts/AppProvider';
 import { makeInteger } from '../../helpers';
+
 import { EntryForm } from '../EntryForm';
 
 interface IProps {
@@ -55,23 +57,27 @@ const EntryEdit: React.FC<IProps> = ({ handleSetEntries, accounts, entry }) => {
     }));
   };
 
-  const handleEntrySubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+  const handleEntrySubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     event.preventDefault();
     setLoading(true);
 
-    EntryApi.update(entryFormData).then((response) => {
-      if (response.success) {
-        inputDateRef.current?.focus();
+    const api = new EntryApi();
+    const response = await api.update(entryFormData);
+    setLoading(false);
 
-        handleCloseModal();
-        handleSetEntries(response.data, true);
+    if (!response.success) {
+      handleError(response.message);
+      return;
+    }
 
-        done();
-      } else {
-        handleError(response.message);
-      }
-      setLoading(false);
-    });
+    inputDateRef.current?.focus();
+
+    handleCloseModal();
+    handleSetEntries(response.data.entry, true);
+
+    done();
   };
 
   return (

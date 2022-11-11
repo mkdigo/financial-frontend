@@ -8,7 +8,6 @@ import {
 import useAuthContext from './hooks/useAuthContext';
 
 import { Home } from './pages/Home';
-import { Logout } from './pages/Logout';
 import { BalanceSheet } from './pages/BalanceSheet';
 import { Accounts } from './pages/Accounts';
 import { Entries } from './pages/Entries';
@@ -29,25 +28,46 @@ function RequireAuth({ children }: { children: JSX.Element }) {
   return children;
 }
 
-const authRoutes = [
+type AuthRouteType = {
+  path: string;
+  text?: string;
+  element: JSX.Element;
+};
+
+export const authRoutes: AuthRouteType[] = [
   {
     path: '/balance_sheet',
+    text: 'Balanço Patrimonial',
     element: <BalanceSheet />,
   },
   {
     path: '/accounts',
+    text: 'Contas',
     element: <Accounts />,
   },
   {
     path: '/entries',
+    text: 'Lançamentos',
     element: <Entries />,
   },
   {
     path: '/expenses',
+    text: 'Despesas',
     element: <Expenses />,
   },
+  // {
+  //   path: '/payables',
+  //   text: 'Contas a Pagar',
+  //   element: ,
+  // },
+  // {
+  //   path: '/receivables',
+  //   text: 'Contas a Receber',
+  //   element: ,
+  // },
   {
     path: '/providers',
+    text: 'Fornecedores',
     element: <Providers />,
   },
   {
@@ -58,13 +78,22 @@ const authRoutes = [
     path: '/providers/edit',
     element: <ProviderEdit />,
   },
+  // {
+  //   path: '/products',
+  //   text: 'Produtos',
+  //   element: ,
+  // },
+  // {
+  //   path: '/reports',
+  //   text: 'Relatórios',
+  //   element: ,
+  // },
 ];
 
 const Routes: React.FC = () => {
   return (
     <Switch>
       <Route path='/' element={<Home />} />
-      <Route path='/logout' element={<Logout />} />
 
       {authRoutes.map((route) => (
         <Route

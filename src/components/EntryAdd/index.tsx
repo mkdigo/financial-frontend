@@ -1,8 +1,10 @@
 import React, { useContext, useRef, useState } from 'react';
+
+import { AppContext } from '../../contexts/AppProvider';
 import { IAccount } from '../../api/AccountApi';
 import EntryApi, { IEntry, IEntryRequest } from '../../api/EntryApi';
-import { AppContext } from '../../contexts/AppProvider';
 import { makeInteger, today } from '../../helpers';
+
 import { EntryForm } from '../EntryForm';
 
 const resetData: IEntryRequest = {
@@ -43,30 +45,34 @@ const EntryAdd: React.FC<IProps> = ({ handleSetEntries, accounts }) => {
     }));
   };
 
-  const handleEntrySubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+  const handleEntrySubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     event.preventDefault();
     setLoading(true);
 
-    EntryApi.store(entryFormData).then((response) => {
-      if (response.success) {
-        setEntryFormData((prev) => ({
-          ...prev,
-          debit_id: 0,
-          credit_id: 0,
-          value: 0,
-          note: '',
-        }));
+    const api = new EntryApi();
+    const response = await api.store(entryFormData);
+    setLoading(false);
 
-        inputDateRef.current?.focus();
+    if (!response.success) {
+      handleError(response.message);
+      return;
+    }
 
-        handleSetEntries(response.data);
+    setEntryFormData((prev) => ({
+      ...prev,
+      debit_id: 0,
+      credit_id: 0,
+      value: 0,
+      note: '',
+    }));
 
-        done();
-      } else {
-        handleError(response.message);
-      }
-      setLoading(false);
-    });
+    inputDateRef.current?.focus();
+
+    handleSetEntries(response.data.entry);
+
+    done();
   };
 
   return (

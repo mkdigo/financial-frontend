@@ -1,4 +1,4 @@
-import axios, { catchReturn, TResponse, setHeaders, responseError } from './';
+import { Api, Response } from './';
 
 interface IProviderSearchParams {
   search: string;
@@ -31,72 +31,26 @@ export interface IProviderAddData {
   note: string;
 }
 
-export default class ProviderApi {
-  public static async get(
+export default class ProviderApi extends Api {
+  public async get(
     params?: IProviderSearchParams
-  ): Promise<TResponse<IProvider[]>> {
-    try {
-      const url = `/providers`;
-      const response = await axios.get(url, setHeaders(params));
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: response.data.providers,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+  ): Promise<Response<{ providers: IProvider[] }>> {
+    return await this.request.get('/providers', { params });
   }
 
-  public static async store(
+  public async store(
     data: IProviderAddData
-  ): Promise<TResponse<IProvider>> {
-    try {
-      const url = `/providers`;
-      const response = await axios.post(url, data);
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: response.data.provider,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+  ): Promise<Response<{ provider: IProvider }>> {
+    return await this.request.post('/providers', data);
   }
 
-  public static async update(data: IProvider): Promise<TResponse<IProvider>> {
-    try {
-      const url = `/providers/${data.id}`;
-      const response = await axios.put(url, data);
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: response.data.provider,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+  public async update(
+    data: IProvider
+  ): Promise<Response<{ provider: IProvider }>> {
+    return this.request.put(`/providers/${data.id}`, data);
   }
 
-  public static async delete(id: number): Promise<TResponse<null>> {
-    try {
-      const url = `/providers/${id}`;
-      const response = await axios.delete(url);
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: null,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+  public async delete(id: number): Promise<Response<null>> {
+    return this.request.delete(`/providers/${id}`);
   }
 }

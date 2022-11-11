@@ -44,7 +44,8 @@ const ProviderAdd: React.FC = () => {
     event.preventDefault();
 
     setLoading(true);
-    const response = await ProviderApi.store(data);
+    const api = new ProviderApi();
+    const response = await api.store(data);
     setLoading(false);
 
     if (!response.success) {

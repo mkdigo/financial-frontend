@@ -1,4 +1,4 @@
-import axios, { catchReturn, TResponse, setHeaders, responseError } from './';
+import { Api, Response } from './';
 import { IGroup } from './GroupApi';
 import { ISubgroup } from './SubgroupApi';
 
@@ -26,71 +26,26 @@ export interface IAccountSearchParams {
   search: string;
 }
 
-export default class AccountApi {
-  public static async get(
+export default class AccountApi extends Api {
+  public async get(
     params?: IAccountSearchParams
-  ): Promise<TResponse<IAccount[]>> {
-    try {
-      const url = `/accounts`;
-      const response = await axios.get(url, setHeaders(params));
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: response.data.accounts,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+  ): Promise<Response<{ accounts: IAccount[] }>> {
+    return await this.request.get('/accounts', { params });
   }
 
-  public static async store(
+  public async store(
     data: IAccountEntryData
-  ): Promise<TResponse<IAccount>> {
-    try {
-      const response = await axios.post('/accounts', data);
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: response.data.account,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+  ): Promise<Response<{ account: IAccount }>> {
+    return await this.request.post('/accounts', data);
   }
 
-  public static async update(
+  public async update(
     data: IAccountEntryData
-  ): Promise<TResponse<IAccount>> {
-    try {
-      const response = await axios.put(`/accounts/${data.id}`, data);
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: response.data.account,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+  ): Promise<Response<{ account: IAccount }>> {
+    return await this.request.put(`/accounts/${data.id}`, data);
   }
 
-  public static async destroy(id: number): Promise<TResponse<null>> {
-    try {
-      const response = await axios.delete(`/accounts/${id}`);
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: null,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+  public async destroy(id: number): Promise<Response<null>> {
+    return await this.request.delete(`/accounts/${id}`);
   }
 }

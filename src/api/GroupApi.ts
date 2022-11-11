@@ -1,4 +1,4 @@
-import axios, { catchReturn, responseError, TResponse } from './';
+import { Api, Response } from './';
 
 export type TGroupName =
   | 'assets'
@@ -12,19 +12,8 @@ export interface IGroup {
   description: string | null;
 }
 
-export default class GroupApi {
-  public static async get(): Promise<TResponse<IGroup[]>> {
-    try {
-      const response = await axios.get('/groups');
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: response.data.groups,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+export default class GroupApi extends Api {
+  public async get(): Promise<Response<{ groups: IGroup[] }>> {
+    return await this.request.get('/groups');
   }
 }

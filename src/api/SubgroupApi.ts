@@ -1,4 +1,4 @@
-import axios, { catchReturn, responseError, TResponse } from './';
+import { Api, Response } from './';
 import { IGroup } from './GroupApi';
 
 export type TSubgroupName =
@@ -21,20 +21,8 @@ export interface ISubgroup {
   group: IGroup;
 }
 
-export default class SubgroupApi {
-  public static async get(): Promise<TResponse<ISubgroup[]>> {
-    try {
-      const url = `/subgroups`;
-      const response = await axios.get(url);
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: response.data.subgroups,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+export default class SubgroupApi extends Api {
+  public async get(): Promise<Response<{ subgroups: ISubgroup[] }>> {
+    return this.request.get(`/subgroups`);
   }
 }

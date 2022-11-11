@@ -29,11 +29,14 @@ const Providers: React.FC = () => {
   const [providerDeleteId, setProviderDeleteId] = useState<number>(0);
 
   useEffect(() => {
-    setLoading(true);
-    ProviderApi.get().then((response) => {
-      if (response.success) setProviders(response.data);
+    (async () => {
+      setLoading(true);
+      const api = new ProviderApi();
+      const response = await api.get();
       setLoading(false);
-    });
+
+      if (response.success) setProviders(response.data.providers);
+    })();
   }, []);
 
   const handleFilterInputChange = (
@@ -51,7 +54,8 @@ const Providers: React.FC = () => {
     event.preventDefault();
 
     setLoading(true);
-    const response = await ProviderApi.get(filterData);
+    const api = new ProviderApi();
+    const response = await api.get(filterData);
     setLoading(false);
 
     if (!response.success) {
@@ -59,7 +63,7 @@ const Providers: React.FC = () => {
       return;
     }
 
-    setProviders(response.data);
+    setProviders(response.data.providers);
   };
 
   const handleEdit = (provider: IProvider): void => {
@@ -80,7 +84,8 @@ const Providers: React.FC = () => {
   ): Promise<void> => {
     event.preventDefault();
     setLoading(true);
-    const response = await ProviderApi.delete(providerDeleteId);
+    const api = new ProviderApi();
+    const response = await api.delete(providerDeleteId);
     setLoading(false);
 
     if (!response.success) {

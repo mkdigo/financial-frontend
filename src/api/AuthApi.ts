@@ -1,7 +1,4 @@
-import axios, { catchReturn, TResponse, responseError } from './index';
-import { removeToken, setToken } from '../helpers';
-
-axios.defaults.withCredentials = true;
+import { Api, Response } from './index';
 
 export interface ILogin {
   username: string;
@@ -17,73 +14,25 @@ export interface IUser {
   updated_at: string;
 }
 
-export default class UserApi {
-  public static async login(data: ILogin): Promise<TResponse<IUser>> {
-    try {
-      const response = await axios.post('/login', data);
+type LoginResponse = {
+  user: IUser;
+  token: string;
+};
 
-      if (!response.data.success) return responseError(response);
+type MeResponse = {
+  user: IUser;
+};
 
-      const token: string = response.data.token;
-
-      setToken(token);
-
-      axios.defaults.headers.common = {
-        Authorization: `Bearer ${token}`,
-      };
-
-      return {
-        success: true,
-        data: response.data.user,
-      };
-    } catch (error: any) {
-      if (error.response) {
-        return {
-          success: false,
-          message: error.response.data.message,
-        };
-      }
-      return {
-        success: false,
-        message: error.message,
-      };
-    }
+export default class UserApi extends Api {
+  public async login(data: ILogin): Promise<Response<LoginResponse>> {
+    return await this.request.post('/login', data);
   }
 
-  public static async logout(): Promise<TResponse<null>> {
-    try {
-      const response = await axios.get('/logout');
-
-      if (response.data.success) {
-        removeToken();
-
-        return {
-          success: true,
-          data: null,
-        };
-      }
-
-      return {
-        success: false,
-        message: 'Something is wrong!',
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+  public async logout(): Promise<Response<null>> {
+    return await this.request.get('/logout');
   }
 
-  public static async me(): Promise<TResponse<IUser>> {
-    try {
-      const response = await axios.get('/me');
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: response.data.user,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+  public async me(): Promise<Response<MeResponse>> {
+    return await this.request.get('/me');
   }
 }

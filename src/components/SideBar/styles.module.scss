@@ -63,9 +63,16 @@
     li {
       border-bottom: solid 1px var(--color-gray);
             
-      a {
+      a, button {
         display: block;
+
         padding: 1rem;
+        width: 100%;
+
+        text-align: left;
+        background: unset;
+        border: unset;
+        color: var(--color-offwhite);
 
         &.currentPage {
           color: var(--color-green);

@@ -1,4 +1,4 @@
-import axios, { catchReturn, TResponse, setHeaders, responseError } from './';
+import { Api, Response } from './';
 
 export interface IEntryRequest {
   id?: number;
@@ -26,83 +26,32 @@ export interface IEntrySearchParams {
   search: string;
 }
 
-export default class EntryApi {
-  public static async get(
+export default class EntryApi extends Api {
+  public async get(
     params: IEntrySearchParams
-  ): Promise<TResponse<IEntry[]>> {
-    try {
-      const response = await axios.get(`/entries`, setHeaders(params));
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: response.data.entries,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+  ): Promise<Response<{ entries: IEntry[] }>> {
+    return await this.request.get(`/entries`, { params });
   }
 
-  public static async store(data: IEntryRequest): Promise<TResponse<IEntry>> {
-    try {
-      const response = await axios.post('/entries', data);
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: response.data.entry,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+  public async store(
+    data: IEntryRequest
+  ): Promise<Response<{ entry: IEntry }>> {
+    return await this.request.post('/entries', data);
   }
 
-  public static async update(data: IEntryRequest): Promise<TResponse<IEntry>> {
-    try {
-      const response = await axios.put(`/entries/${data.id}`, data);
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: response.data.entry,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+  public async update(
+    data: IEntryRequest
+  ): Promise<Response<{ entry: IEntry }>> {
+    return await this.request.put(`/entries/${data.id}`, data);
   }
 
-  public static async destroy(id: number): Promise<TResponse<null>> {
-    try {
-      const response = await axios.delete(`/entries/${id}`);
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: null,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+  public async destroy(id: number): Promise<Response<null>> {
+    return await this.request.delete(`/entries/${id}`);
   }
 
-  public static async getExpenses(
+  public async getExpenses(
     params: IEntrySearchParams
-  ): Promise<TResponse<IEntry[]>> {
-    try {
-      const response = await axios.get(`/entries/expenses`, setHeaders(params));
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: response.data.entries,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+  ): Promise<Response<{ entries: IEntry[] }>> {
+    return await this.request.get(`/entries/expenses`, { params });
   }
 }

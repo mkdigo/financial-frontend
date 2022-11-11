@@ -36,25 +36,24 @@ export default function useEntries(): IUseEntries {
   const [editEntry, setEditEntry] = useState<IEntry>();
   const [deleteEntryId, setDeleteEntryId] = useState<number>(0);
 
-  // Load Accounts
+  // Load Accounts and Entries
   useEffect(() => {
-    setLoading(true);
-    AccountApi.get().then((response) => {
-      if (response.success) setAccounts(response.data);
-      setLoading(false);
-    });
-  }, [setLoading]);
+    (async () => {
+      setLoading(true);
+      const accountApi = new AccountApi();
+      const entryApi = new EntryApi();
 
-  // Load Entries
-  useEffect(() => {
-    setLoading(true);
-    EntryApi.get(filterData).then((response) => {
-      if (response.success) setEntries(response.data);
-      else handleError(response.message);
+      const [accountReponse, entryResponse] = await Promise.all([
+        accountApi.get(),
+        entryApi.get(filterData),
+      ]);
+
       setLoading(false);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setLoading]);
+
+      if (accountReponse.success) setAccounts(accountReponse.data.accounts);
+      if (entryResponse.success) setEntries(entryResponse.data.entries);
+    })();
+  }, []);
 
   const handleSetEntries = (entry: IEntry, edit: boolean = false): void => {
     if (edit) {
@@ -80,14 +79,21 @@ export default function useEntries(): IUseEntries {
     }));
   };
 
-  const handleSearchSubmit = (event: FormEvent): void => {
+  const handleSearchSubmit = async (event: FormEvent): Promise<void> => {
     event.preventDefault();
     setLoading(true);
-    EntryApi.get(filterData).then((response) => {
-      if (response.success) setEntries(response.data);
-      else handleError(response.message);
-      setLoading(false);
-    });
+
+    const api = new EntryApi();
+
+    const response = await api.get(filterData);
+    setLoading(false);
+
+    if (!response.success) {
+      handleError(response.message);
+      return;
+    }
+
+    setEntries(response.data.entries);
   };
 
   const handleEditModal = (entry: IEntry): void => {
@@ -100,25 +106,26 @@ export default function useEntries(): IUseEntries {
     setDeleteEntryId(id);
   };
 
-  const handleDeleteSubmit = (
+  const handleDeleteSubmit = async (
     event: React.FormEvent<HTMLFormElement>
-  ): void => {
+  ): Promise<void> => {
     event.preventDefault();
     setLoading(true);
 
-    EntryApi.destroy(deleteEntryId).then((response) => {
-      if (response.success) {
-        const newEntries = entries.filter(
-          (entry) => entry.id !== deleteEntryId
-        );
-        setEntries(newEntries);
-        handleCloseModal();
-        done();
-      } else {
-        handleError(response.message);
-      }
-      setLoading(false);
-    });
+    const api = new EntryApi();
+
+    const response = await api.destroy(deleteEntryId);
+    setLoading(false);
+
+    if (!response.success) {
+      handleError(response.message);
+      return;
+    }
+
+    const newEntries = entries.filter((entry) => entry.id !== deleteEntryId);
+    setEntries(newEntries);
+    handleCloseModal();
+    done();
   };
 
   return {

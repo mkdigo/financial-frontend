@@ -72,14 +72,21 @@ const BalanceSheet: React.FC = () => {
   });
 
   useEffect(() => {
-    setLoading(true);
-    BalanceSheetApi.get(yearMonth.year, yearMonth.month).then((response) => {
+    (async () => {
+      setLoading(true);
+      const api = new BalanceSheetApi();
       setLoading(false);
-      if (response.success && response.data) {
-        setBalanceSheet(response.data.balance);
-        setIncomeStatement(response.data.incomeStatement);
-      }
-    });
+
+      const response = await api.get({
+        year: yearMonth.year,
+        month: yearMonth.month,
+      });
+
+      if (!response.success) return;
+
+      setBalanceSheet(response.data.balance);
+      setIncomeStatement(response.data.incomeStatement);
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [yearMonth]);
 

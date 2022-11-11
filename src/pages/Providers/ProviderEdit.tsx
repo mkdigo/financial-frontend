@@ -63,7 +63,8 @@ const ProviderEdit: React.FC = () => {
     event.preventDefault();
 
     setLoading(true);
-    const response = await ProviderApi.update(data);
+    const api = new ProviderApi();
+    const response = await api.update(data);
     setLoading(false);
 
     if (!response.success) {

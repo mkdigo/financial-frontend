@@ -1,78 +1,96 @@
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
 import { getToken, removeToken } from '../helpers';
 
-const apiURL: string = import.meta.env.VITE_APP_API_URL;
-
-axios.defaults.baseURL = apiURL;
-axios.defaults.headers.common = {
-  Accept: 'application/json',
-  Authorization: `Bearer ${getToken()}`,
-};
-axios.defaults.withCredentials = true;
-
-type TSuccess<T> = {
+type ResponseOk<T> = {
   success: true;
   data: T;
+  links?: {
+    first: string;
+    last: string;
+    prev: string | null;
+    next: string | null;
+  };
+  meta?: {
+    current_page: number;
+    from: number;
+    last_page: number;
+    path: string;
+    per_page: number;
+    to: number;
+    total: number;
+  };
 };
 
-type TError = {
+type ResponseError = {
   success: false;
-  message?: string;
-  fields?: string[] | null;
-  errors?: any;
+  message: string;
+  errors: any;
+  fields: string[] | null;
 };
 
-export type TResponse<T> = TSuccess<T> | TError;
+export type Response<T> = ResponseOk<T> | ResponseError;
 
-export const setHeaders = (params: any = {}) => {
-  return {
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${getToken()}`,
-    },
-    params,
-  };
-};
+export class Api {
+  #request;
 
-export const transformErrorsArrayToString = (errors: {}): string => {
-  if (typeof errors === 'object') {
-    let message = '';
-    (Object.keys(errors) as Array<keyof typeof errors>).forEach((key) => {
-      message += errors[key] + ' ';
+  constructor() {
+    this.#request = axios.create({
+      baseURL: import.meta.env.VITE_APP_API_URL,
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${getToken()}`,
+      },
+      withCredentials: true,
     });
-    return message;
-  } else return 'Something is wrong!';
-};
 
-export const checkTokenError = (error: any): void => {
-  if (error.response.status === 401) {
-    removeToken();
-    window.location.href = '/';
-  }
-};
+    this.#request.interceptors.response.use(
+      (response) => {
+        if (response.data.links)
+          return this.responsePaginateResource(response.data);
 
-export const responseError = (response: AxiosResponse): TError => {
-  return {
-    success: false,
-    message: response.data.message,
-    fields: response.data.fields,
-    errors: response.data.errors,
-  };
-};
+        return this.responseResource(response.data.data);
+      },
+      (error) => {
+        if (
+          error.response.status === 401 &&
+          error.response.data.message !==
+            'The provided credentials are incorrect.'
+        ) {
+          removeToken();
+          window.location.reload();
+        }
 
-export const catchReturn = (error: any): TError => {
-  if (error.response) {
-    checkTokenError(error);
-
-    return responseError(error.response);
+        return this.failResource(error);
+      }
+    );
   }
 
-  return {
-    success: false,
-    message: 'Something is wrong.',
-    fields: null,
-    errors: null,
-  };
-};
+  protected get request() {
+    return this.#request;
+  }
 
-export default axios;
+  protected responseResource<TData>(data: TData): ResponseOk<TData> {
+    return {
+      success: true,
+      data,
+    };
+  }
+
+  protected responsePaginateResource(data: any): ResponseOk<any> {
+    return {
+      success: true,
+      data: data.data,
+      links: data.links,
+      meta: data.meta,
+    };
+  }
+
+  protected failResource(error: any): ResponseError {
+    return {
+      success: false,
+      message: error.response.data.message,
+      errors: error.response.data.errors,
+      fields: error.response.data.fields,
+    };
+  }
+}

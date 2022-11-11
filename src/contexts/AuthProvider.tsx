@@ -23,11 +23,12 @@ const AuthProvider: React.FC<IProps> = ({ children }) => {
       const token = getToken();
 
       if (token) {
-        const response = await AuthApi.me();
+        const api = new AuthApi();
+        const response = await api.me();
 
         if (!response.success) return;
 
-        setAuthUser(response.data);
+        setAuthUser(response.data.user);
       }
 
       setFirstLoad(false);

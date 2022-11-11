@@ -1,15 +1,18 @@
 import React, { useContext, useEffect, useState } from 'react';
+
 import AccountApi, { IAccount } from '../../api/AccountApi';
 import EntryApi, {
   IEntry,
   IEntryRequest,
   IEntrySearchParams,
 } from '../../api/EntryApi';
-import { EntryEdit } from '../../components/EntryEdit';
-import { Modal } from '../../components/Modal';
 import { AppContext } from '../../contexts/AppProvider';
 import { DateTime, makeInteger, numberFormat, today } from '../../helpers';
+
 import { Layout } from '../../Layout';
+import { Modal } from '../../components/Modal';
+import { EntryEdit } from '../../components/EntryEdit';
+
 import PencilSvg from '../../svg/PencilSvg';
 import PlusSvg from '../../svg/PlusSvg';
 import SearchSvg from '../../svg/SearchSvg';
@@ -52,29 +55,37 @@ const Expenses: React.FC = () => {
   } = useContext(AppContext);
 
   useEffect(() => {
-    AccountApi.get().then((response) => {
-      if (response.success) {
-        setAccounts(response.data);
-        const debits = response.data.filter(
-          (account) => account.subgroup_id === 10 || account.subgroup_id === 11
-        );
-        setDebitAccounts(debits);
-        const credits = response.data.filter(
-          (account) => account.subgroup_id === 1
-        );
-        setCreditAccounts(credits);
-      }
-    });
+    (async () => {
+      const api = new AccountApi();
+
+      const response = await api.get();
+
+      if (!response.success) return;
+
+      setAccounts(response.data.accounts);
+
+      const debits = response.data.accounts.filter(
+        (account) => account.subgroup_id === 10 || account.subgroup_id === 11
+      );
+      setDebitAccounts(debits);
+
+      const credits = response.data.accounts.filter(
+        (account) => account.subgroup_id === 1
+      );
+      setCreditAccounts(credits);
+    })();
   }, []);
 
-  const getEntries = () => {
+  const getEntries = async () => {
     setLoading(true);
-    EntryApi.getExpenses(filterData).then((response) => {
-      setLoading(false);
-      if (response.success) {
-        setEntries(response.data);
-      }
-    });
+
+    const api = new EntryApi();
+    const response = await api.getExpenses(filterData);
+    setLoading(false);
+
+    if (!response.success) return;
+
+    setEntries(response.data.entries);
   };
 
   useEffect(() => {
@@ -121,20 +132,24 @@ const Expenses: React.FC = () => {
     }
   };
 
-  const handleEntrySubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+  const handleEntrySubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     event.preventDefault();
     setLoading(true);
 
-    EntryApi.store(entryFormData).then((response) => {
-      if (response.success) {
-        handleSetEntries(response.data);
-        resetFormData();
-        done();
-      } else {
-        handleError(response.message);
-      }
-      setLoading(false);
-    });
+    const api = new EntryApi();
+    const response = await api.store(entryFormData);
+    setLoading(false);
+
+    if (!response.success) {
+      handleError(response.message);
+      return;
+    }
+
+    handleSetEntries(response.data.entry);
+    resetFormData();
+    done();
   };
 
   const handleInputChange = (
@@ -165,25 +180,25 @@ const Expenses: React.FC = () => {
     setDeleteEntryId(id);
   };
 
-  const handleDeleteSubmit = (
+  const handleDeleteSubmit = async (
     event: React.FormEvent<HTMLFormElement>
-  ): void => {
+  ): Promise<void> => {
     event.preventDefault();
     setLoading(true);
 
-    EntryApi.destroy(deleteEntryId).then((response) => {
-      if (response.success) {
-        const newEntries = entries.filter(
-          (entry) => entry.id !== deleteEntryId
-        );
-        setEntries(newEntries);
-        handleCloseModal();
-        done();
-      } else {
-        handleError(response.message);
-      }
-      setLoading(false);
-    });
+    const api = new EntryApi();
+    const response = await api.destroy(deleteEntryId);
+    setLoading(false);
+
+    if (!response.success) {
+      handleError(response.message);
+      return;
+    }
+
+    const newEntries = entries.filter((entry) => entry.id !== deleteEntryId);
+    setEntries(newEntries);
+    handleCloseModal();
+    done();
   };
 
   return (

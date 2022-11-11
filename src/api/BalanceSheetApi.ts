@@ -1,4 +1,4 @@
-import axios, { catchReturn, TResponse, setHeaders, responseError } from './';
+import { Api, Response } from './';
 
 export interface IBalanceSheet {
   assets: {
@@ -40,27 +40,18 @@ export interface IIncomeStatement {
   };
 }
 
-export default class BalanceSheetApi {
-  public static async get(
-    year: string,
-    month: string
-  ): Promise<
-    TResponse<{
+type TParams = {
+  year: string;
+  month: string;
+};
+
+export default class BalanceSheetApi extends Api {
+  public async get(params: TParams): Promise<
+    Response<{
       balance: IBalanceSheet;
       incomeStatement: IIncomeStatement;
     }>
   > {
-    try {
-      const response = await axios.get(`/balance`, setHeaders({ year, month }));
-
-      if (!response.data.success) return responseError(response);
-
-      return {
-        success: true,
-        data: response.data.data,
-      };
-    } catch (error) {
-      return catchReturn(error);
-    }
+    return await this.request.get(`/balance`, { params });
   }
 }

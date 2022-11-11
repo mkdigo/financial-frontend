@@ -55,14 +55,16 @@ export default function useAccounts(): IUseAccounts {
 
   const searchRef = useRef<HTMLInputElement>(null);
 
-  const getData = useCallback(() => {
+  const getData = useCallback(async () => {
     setLoading(true);
-    AccountApi.get(params).then((response) => {
-      if (response.success && response.data) {
-        setAccounts(response.data);
-      }
-      setLoading(false);
-    });
+    const api = new AccountApi();
+
+    const response = await api.get(params);
+    setLoading(false);
+
+    if (!response.success) return;
+
+    setAccounts(response.data.accounts);
   }, [setLoading, params]);
 
   useEffect(() => {
@@ -85,15 +87,18 @@ export default function useAccounts(): IUseAccounts {
   }, [getData]);
 
   useEffect(() => {
-    GroupApi.get().then((response) => {
-      if (response.success) setGroups(response.data);
-    });
-  }, []);
+    (async () => {
+      const groupApi = new GroupApi();
+      const subGroupApi = new SubgroupApi();
+      const [groupResponse, subGroupResponse] = await Promise.all([
+        groupApi.get(),
+        subGroupApi.get(),
+      ]);
 
-  useEffect(() => {
-    SubgroupApi.get().then((response) => {
-      if (response.success) setSubgroups(response.data);
-    });
+      if (groupResponse.success) setGroups(groupResponse.data.groups);
+      if (subGroupResponse.success)
+        setSubgroups(subGroupResponse.data.subgroups);
+    })();
   }, []);
 
   const handleFilterChange = (
@@ -105,22 +110,25 @@ export default function useAccounts(): IUseAccounts {
     }));
   };
 
-  const handleAddSubmit = (data: IAccountEntryData): void => {
+  const handleAddSubmit = async (data: IAccountEntryData): Promise<void> => {
     setLoading(true);
-    AccountApi.store(data).then((response) => {
-      if (response.success) {
-        const newAccounts = accounts;
-        newAccounts.unshift(response.data);
-        setAccounts(newAccounts);
-        handleCloseModal();
-        done();
-      } else {
-        handleError(
-          response.message ?? 'Algo de errado aconteceu. Tente novamente.'
-        );
-      }
-      setLoading(false);
-    });
+    const api = new AccountApi();
+
+    const response = await api.store(data);
+    setLoading(false);
+
+    if (!response.success) {
+      handleError(
+        response.message ?? 'Algo de errado aconteceu. Tente novamente.'
+      );
+      return;
+    }
+
+    const newAccounts = [...accounts];
+    newAccounts.unshift(response.data.account);
+    setAccounts(newAccounts);
+    handleCloseModal();
+    done();
   };
 
   const handleEditAccount = (account: IAccount): void => {
@@ -133,26 +141,30 @@ export default function useAccounts(): IUseAccounts {
     });
   };
 
-  const handleEditSubmit = (data: IAccountEntryData): void => {
+  const handleEditSubmit = async (data: IAccountEntryData): Promise<void> => {
     if (data.id) {
       setLoading(true);
 
-      AccountApi.update(data).then((response) => {
-        if (response.success) {
-          const newAccounts = accounts.map((account) => {
-            if (account.id === response.data?.id) return response.data;
-            return account;
-          });
-          setAccounts(newAccounts);
-          handleCloseModal();
-          done();
-        } else {
-          handleError(
-            response.message ?? 'Algo de errado aconteceu. Tente novamente.'
-          );
-        }
-        setLoading(false);
+      const api = new AccountApi();
+
+      const response = await api.update(data);
+      setLoading(false);
+
+      if (!response.success) {
+        handleError(
+          response.message ?? 'Algo de errado aconteceu. Tente novamente.'
+        );
+        return;
+      }
+
+      const newAccounts = accounts.map((account) => {
+        if (account.id === response.data.account.id)
+          return response.data.account;
+        return account;
       });
+      setAccounts(newAccounts);
+      handleCloseModal();
+      done();
     }
   };
 
@@ -161,31 +173,33 @@ export default function useAccounts(): IUseAccounts {
     setDeleteId(id);
   };
 
-  const handleDeleteSubmit = (
+  const handleDeleteSubmit = async (
     event: React.FormEvent<HTMLFormElement>
-  ): void => {
+  ): Promise<void> => {
     event.preventDefault();
-    setLoading(true);
 
-    if (deleteId) {
-      AccountApi.destroy(deleteId).then((response) => {
-        if (response.success) {
-          const newAccounts = accounts.filter(
-            (account) => account.id !== deleteId
-          );
-          setAccounts(newAccounts);
-          handleCloseModal();
-          done();
-        } else {
-          handleError(
-            'Você não pode excluir essa conta! Uma conta só pode ser excluida se não houver lançamentos com ela. Exclua todos os lançamentos que usa essa conta antes.'
-          );
-        }
-        setLoading(false);
-      });
-    } else {
+    if (!deleteId) {
       handleError('Nenhuma conta foi seleciona, tente novamente.');
+      return;
     }
+
+    setLoading(true);
+    const api = new AccountApi();
+    setLoading(false);
+
+    const response = await api.destroy(deleteId);
+
+    if (!response.success) {
+      handleError(
+        'Você não pode excluir essa conta! Uma conta só pode ser excluida se não houver lançamentos com ela. Exclua todos os lançamentos que usa essa conta antes.'
+      );
+      return;
+    }
+
+    const newAccounts = accounts.filter((account) => account.id !== deleteId);
+    setAccounts(newAccounts);
+    handleCloseModal();
+    done();
   };
 
   return {
