@@ -16,6 +16,10 @@ import { Expenses } from './pages/Expenses';
 import { Providers } from './pages/Providers';
 import { ProviderAdd } from './pages/Providers/ProviderAdd';
 import { ProviderEdit } from './pages/Providers/ProviderEdit';
+import { Products } from './pages/Products';
+import { ProductAdd } from './pages/Products/ProductAdd';
+import { ProductEdit } from './pages/Products/ProductEdit';
+import { ProductShow } from './pages/Products/ProductShow';
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { authUser } = useAuthContext();
@@ -78,11 +82,23 @@ export const authRoutes: AuthRouteType[] = [
     path: '/providers/edit',
     element: <ProviderEdit />,
   },
-  // {
-  //   path: '/products',
-  //   text: 'Produtos',
-  //   element: ,
-  // },
+  {
+    path: '/products',
+    text: 'Produtos',
+    element: <Products />,
+  },
+  {
+    path: '/products/:id',
+    element: <ProductShow />,
+  },
+  {
+    path: '/products/new',
+    element: <ProductAdd />,
+  },
+  {
+    path: '/products/:id/edit',
+    element: <ProductEdit />,
+  },
   // {
   //   path: '/reports',
   //   text: 'Relatórios',

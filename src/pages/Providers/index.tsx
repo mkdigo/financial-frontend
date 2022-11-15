@@ -158,6 +158,10 @@ const Providers: React.FC = () => {
               <span>{provider.cellphone}</span>
             </li>
             <li>
+              <strong>CEP:</strong>
+              <span>{provider.zipcode}</span>
+            </li>
+            <li>
               <strong>Estado:</strong>
               <span>{provider.state}</span>
             </li>
